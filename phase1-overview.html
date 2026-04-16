@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Driver Planning — Phase 1 Overview</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+  #root { min-height: 100vh; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const COLORS = {
+  primary: '#1F3A5F',
+  accent: '#2E75B6',
+  success: '#28a745',
+  warning: '#f59e0b',
+  danger: '#dc3545',
+  light: '#f8f9fa',
+  card: '#ffffff',
+  muted: '#6c757d',
+  blue50: '#eff6ff',
+  blue100: '#dbeafe',
+  green50: '#f0fdf4',
+  amber50: '#fffbeb',
+  purple50: '#faf5ff',
+  rose50: '#fff1f2',
+};
+
+// ── Tab definitions ──
+const TABS = [
+  { id: 'overview', label: 'Overview', icon: '🎯' },
+  { id: 'architecture', label: 'Architecture', icon: '🏗️' },
+  { id: 'data', label: 'Data Model', icon: '📊' },
+  { id: 'rules', label: 'Assignment Rules', icon: '⚙️' },
+  { id: 'workflows', label: 'Workflows', icon: '🔄' },
+  { id: 'phases', label: 'Roadmap', icon: '📋' },
+  { id: 'it', label: 'IT Requirements', icon: '🔧' },
+];
+
+// ── Reusable Components ──
+const Card = ({ title, children, color = COLORS.accent, icon, onClick, style = {} }) => (
+  <div onClick={onClick} style={{
+    background: COLORS.card, borderRadius: 12, padding: '20px 24px',
+    borderLeft: `4px solid ${color}`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+    cursor: onClick ? 'pointer' : 'default', transition: 'all 0.2s',
+    ...style,
+  }}
+  onMouseEnter={e => { if (onClick) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)'; }}}
+  onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; }}
+  >
+    {title && <div style={{ fontSize: 14, fontWeight: 700, color, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+      {icon && <span style={{ fontSize: 18 }}>{icon}</span>}{title}
+    </div>}
+    <div style={{ fontSize: 13, lineHeight: 1.6, color: '#444' }}>{children}</div>
+  </div>
+);
+
+const Badge = ({ text, color = COLORS.accent }) => (
+  <span style={{
+    display: 'inline-block', padding: '3px 10px', borderRadius: 12,
+    fontSize: 11, fontWeight: 600, background: color + '18', color,
+  }}>{text}</span>
+);
+
+const Arrow = ({ direction = 'down' }) => (
+  <div style={{ textAlign: 'center', padding: '6px 0', color: COLORS.accent, fontSize: 20 }}>
+    {direction === 'down' ? '↓' : direction === 'right' ? '→' : '↔'}
+  </div>
+);
+
+// ── OVERVIEW TAB ──
+const OverviewTab = () => (
+  <div>
+    <div style={{ textAlign: 'center', marginBottom: 32 }}>
+      <h2 style={{ color: COLORS.primary, fontSize: 22, marginBottom: 8 }}>What is Phase 1?</h2>
+      <p style={{ color: COLORS.muted, fontSize: 14, maxWidth: 700, margin: '0 auto' }}>
+        A structured planning layer built with Microsoft 365 tools that the institution already uses.
+        It sits between KELIO and CARMEP, orchestrating mission planning without replacing either system.
+      </p>
+    </div>
+
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 24 }}>
+      <Card title="THE PROBLEM" icon="❌" color={COLORS.danger}>
+        <ul style={{ paddingLeft: 16 }}>
+          <li>Mission data scattered across Excel, emails, phone calls</li>
+          <li>No centralised driver availability view</li>
+          <li>No rotation fairness tracking</li>
+          <li>No conflict detection (double-booking risk)</li>
+          <li>Manual Power BI data upload</li>
+          <li>No audit trail for assignment decisions</li>
+        </ul>
+      </Card>
+      <Card title="THE SOLUTION" icon="✅" color={COLORS.success}>
+        <ul style={{ paddingLeft: 16 }}>
+          <li>One source of truth in SharePoint (13 lists)</li>
+          <li>KELIO availability synced automatically</li>
+          <li>5 business rules for fair assignment</li>
+          <li>Automated conflict detection</li>
+          <li>Power BI connected directly (no upload)</li>
+          <li>Full audit trail on every action</li>
+        </ul>
+      </Card>
+      <Card title="THE APPROACH" icon="🎯" color={COLORS.accent}>
+        <ul style={{ paddingLeft: 16 }}>
+          <li>Uses existing Microsoft 365 infrastructure</li>
+          <li>No additional servers or deployments</li>
+          <li>Progressive phases (start simple, grow)</li>
+          <li>Data structured for future migration</li>
+          <li>Coordinators keep decision authority</li>
+          <li>Suggestive, not directive: system recommends, human decides</li>
+        </ul>
+      </Card>
+    </div>
+
+    <div style={{ background: COLORS.blue50, borderRadius: 12, padding: 24, textAlign: 'center' }}>
+      <h3 style={{ color: COLORS.primary, fontSize: 16, marginBottom: 12 }}>Key Numbers</h3>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 40, flexWrap: 'wrap' }}>
+        {[
+          { n: '~180', label: 'Vehicles' },
+          { n: '3', label: 'Driver Teams' },
+          { n: '10-30', label: 'Daily Missions' },
+          { n: '13', label: 'SharePoint Lists' },
+          { n: '5', label: 'Assignment Rules' },
+          { n: '10', label: 'Automated Flows' },
+          { n: '4', label: 'Power BI Pages' },
+        ].map((item, i) => (
+          <div key={i} style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 28, fontWeight: 800, color: COLORS.accent }}>{item.n}</div>
+            <div style={{ fontSize: 11, color: COLORS.muted, marginTop: 2 }}>{item.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// ── ARCHITECTURE TAB ──
+const ArchitectureTab = () => {
+  const [hoveredLayer, setHoveredLayer] = useState(null);
+  const layers = [
+    { id: 'users', label: 'Users', color: '#6366f1', items: ['Coordinators', 'Drivers', 'Reservation Service', 'Management', 'KELIO Operator'], desc: 'Role-based access through Power Apps and Power BI. Each user sees only what they need.' },
+    { id: 'ui', label: 'Power Apps (Canvas)', color: '#2E75B6', items: ['Mission Intake', 'Assignment Wizard', 'Driver View', 'Queue Monitor', 'Vehicle Register'], desc: 'Mobile-responsive interface for all operational actions. Coordinators create missions, assign drivers, and monitor status.' },
+    { id: 'logic', label: 'Power Automate (10 Flows)', color: '#f59e0b', items: ['KELIO Sync', 'Conflict Detection', 'Notifications', 'CARMEP Queue', 'Equity Calculator', 'Recurring Missions', 'Audit Logger'], desc: 'Business logic, integrations, and automation. Handles KELIO sync every 15 min, conflict detection, 8 email templates, and rotation calculations.' },
+    { id: 'data', label: 'SharePoint Online (13 Lists)', color: '#28a745', items: ['Missions', 'Drivers', 'Vehicles', 'Assignments', 'Rotation', 'Availability', 'CARMEP Queue', 'KELIO Tasks', 'Passengers', 'Recurring', 'Audit Log'], desc: 'Central data store. All 13 lists with lookup relationships providing relational integrity. Structured for future migration.' },
+    { id: 'reporting', label: 'Power BI (4 Pages)', color: '#dc3545', items: ['Operations', 'Driver Performance', 'Fleet Utilisation', 'Integration Health'], desc: 'Direct connection to SharePoint — no manual upload. Auto-refresh during business hours. Role-based dashboard access.' },
+  ];
+
+  return (
+    <div>
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <h2 style={{ color: COLORS.primary, fontSize: 22, marginBottom: 8 }}>Solution Architecture</h2>
+        <p style={{ color: COLORS.muted, fontSize: 13 }}>Click any layer to see details</p>
+      </div>
+
+      <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+        <div style={{ flex: '1 1 400px' }}>
+          {layers.map((layer, i) => (
+            <React.Fragment key={layer.id}>
+              <div
+                onClick={() => setHoveredLayer(hoveredLayer === layer.id ? null : layer.id)}
+                style={{
+                  background: hoveredLayer === layer.id ? layer.color + '15' : COLORS.card,
+                  border: `2px solid ${hoveredLayer === layer.id ? layer.color : '#e5e7eb'}`,
+                  borderRadius: 10, padding: '14px 18px', cursor: 'pointer', transition: 'all 0.2s',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 700, color: layer.color, fontSize: 14 }}>{layer.label}</span>
+                  <span style={{ fontSize: 11, color: COLORS.muted }}>{hoveredLayer === layer.id ? '▼' : '▶'}</span>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                  {layer.items.map((item, j) => (
+                    <Badge key={j} text={item} color={layer.color} />
+                  ))}
+                </div>
+                {hoveredLayer === layer.id && (
+                  <div style={{ marginTop: 12, padding: '10px 12px', background: layer.color + '08', borderRadius: 8, fontSize: 12, lineHeight: 1.6 }}>
+                    {layer.desc}
+                  </div>
+                )}
+              </div>
+              {i < layers.length - 1 && <Arrow />}
+            </React.Fragment>
+          ))}
+        </div>
+
+        <div style={{ flex: '0 0 240px' }}>
+          <Card title="EXTERNAL SYSTEMS" color={COLORS.muted} style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 12 }}>
+              <strong style={{ color: COLORS.primary }}>KELIO</strong>
+              <div style={{ fontSize: 12, marginTop: 4 }}>HR / Attendance System</div>
+              <div style={{ fontSize: 11, color: COLORS.muted }}>Read-only API sync every 15 min</div>
+              <div style={{ fontSize: 11, color: COLORS.warning }}>Blackout: 11:45–13:15 daily</div>
+            </div>
+            <div>
+              <strong style={{ color: COLORS.primary }}>CARMEP</strong>
+              <div style={{ fontSize: 12, marginTop: 4 }}>Legacy Dispatch System</div>
+              <div style={{ fontSize: 11, color: COLORS.muted }}>Queue-based async handoff</div>
+              <div style={{ fontSize: 11, color: COLORS.muted }}>Coordinator decides → Reservation executes</div>
+            </div>
+          </Card>
+          <Card title="SECURITY" color="#6366f1">
+            <div style={{ fontSize: 12 }}>
+              <div>SharePoint permission groups</div>
+              <div>Power Apps role-based screens</div>
+              <div>Power BI workspace roles</div>
+              <div>Microsoft Entra ID</div>
+              <div style={{ marginTop: 8, fontWeight: 600 }}>All data within EP tenant</div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── DATA MODEL TAB ──
+const DataModelTab = () => {
+  const [selectedList, setSelectedList] = useState(null);
+  const lists = [
+    { name: 'Missions', fields: 19, category: 'core', color: '#2E75B6', desc: 'Central mission record: intake, status, assignment tracking, CARMEP reference. The starting point for every transport request.' },
+    { name: 'Drivers', fields: 16, category: 'core', color: '#2E75B6', desc: 'Driver master register: name, team, licence categories, pool (Standard/VIP), KELIO ID, equity score, active status.' },
+    { name: 'Vehicles', fields: 13, category: 'core', color: '#2E75B6', desc: 'Vehicle register: plate, type, capacity, PMR suitability, availability status, team assignment, maintenance schedule.' },
+    { name: 'Assignments', fields: 12, category: 'core', color: '#2E75B6', desc: 'Links driver + vehicle to mission. Tracks lifecycle: Active → Accepted → Completed. Records which rules were applied (R1–R5).' },
+    { name: 'Rotation Ledger', fields: 12, category: 'fairness', color: '#28a745', desc: 'Tracks mission distribution per driver per period. Equity delta shows deviation from team average. Supports fairness reviews.' },
+    { name: 'Availability Snapshot', fields: 10, category: 'integration', color: '#f59e0b', desc: 'KELIO-sourced availability data. Updated every 15 min. Shows shift times, absence type, and data freshness.' },
+    { name: 'CARMEP Queue', fields: 11, category: 'integration', color: '#f59e0b', desc: 'Structured handoff to reservation service. Queue items contain all booking details. Status tracks processing lifecycle.' },
+    { name: 'KELIO Tasks', fields: 9, category: 'integration', color: '#f59e0b', desc: 'Sync log tracking every KELIO synchronisation cycle. Monitors integration health and detects failures early.' },
+    { name: 'Passengers', fields: 8, category: 'operational', color: '#6366f1', desc: 'Passenger details per mission. VIP flag, special needs, custom pickup location. Supports protocol and accessibility requirements.' },
+    { name: 'Recurring Templates', fields: 12, category: 'operational', color: '#6366f1', desc: 'Defines repeating mission patterns. System auto-generates draft missions for upcoming periods.' },
+    { name: 'Audit Log', fields: 9, category: 'governance', color: '#dc3545', desc: 'Chronological record of all significant actions. Who did what, when, why. Essential for traceability and dispute resolution.' },
+  ];
+
+  const categories = [
+    { id: 'core', label: 'Core Planning', color: '#2E75B6' },
+    { id: 'fairness', label: 'Fairness', color: '#28a745' },
+    { id: 'integration', label: 'Integration', color: '#f59e0b' },
+    { id: 'operational', label: 'Operational', color: '#6366f1' },
+    { id: 'governance', label: 'Governance', color: '#dc3545' },
+  ];
+
+  return (
+    <div>
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <h2 style={{ color: COLORS.primary, fontSize: 22, marginBottom: 8 }}>SharePoint Data Model — 13 Lists</h2>
+        <p style={{ color: COLORS.muted, fontSize: 13 }}>Click any list to see its purpose and field count</p>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 12, flexWrap: 'wrap' }}>
+          {categories.map(c => (
+            <Badge key={c.id} text={c.label} color={c.color} />
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
+        {lists.map(list => (
+          <div key={list.name}
+            onClick={() => setSelectedList(selectedList === list.name ? null : list.name)}
+            style={{
+              background: selectedList === list.name ? list.color + '10' : COLORS.card,
+              border: `2px solid ${selectedList === list.name ? list.color : '#e5e7eb'}`,
+              borderRadius: 10, padding: 16, cursor: 'pointer', transition: 'all 0.2s',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: 700, color: list.color, fontSize: 14 }}>{list.name}</span>
+              <span style={{ fontSize: 11, color: COLORS.muted, background: '#f3f4f6', padding: '2px 8px', borderRadius: 8 }}>{list.fields} fields</span>
+            </div>
+            {selectedList === list.name && (
+              <div style={{ marginTop: 10, fontSize: 12, lineHeight: 1.6, color: '#555' }}>
+                {list.desc}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginTop: 24, background: COLORS.blue50, borderRadius: 12, padding: 20 }}>
+        <h3 style={{ color: COLORS.primary, fontSize: 14, marginBottom: 12 }}>Key Relationships (Lookups)</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 8, fontSize: 12 }}>
+          {[
+            'Missions.AssignedDriver → Drivers',
+            'Missions.AssignedVehicle → Vehicles',
+            'Missions.RecurringId → Recurring Templates',
+            'Assignments.Mission → Missions',
+            'Assignments.Driver → Drivers',
+            'Assignments.Vehicle → Vehicles',
+            'Rotation Ledger.Driver → Drivers',
+            'Availability Snapshot.Driver → Drivers',
+            'CARMEP Queue.Mission → Missions',
+            'Passengers.Mission → Missions',
+          ].map((rel, i) => {
+            const [from, to] = rel.split(' → ');
+            return (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ color: COLORS.accent, fontFamily: 'monospace' }}>{from}</span>
+                <span style={{ color: COLORS.muted }}>→</span>
+                <span style={{ fontWeight: 600, color: COLORS.primary }}>{to}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── ASSIGNMENT RULES TAB ──
+const RulesTab = () => {
+  const [activeRule, setActiveRule] = useState(null);
+  const rules = [
+    { id: 'R1', name: 'Licence Filter', color: '#dc3545', icon: '🪪',
+      input: 'Mission vehicle type',
+      logic: 'Sedan → B, Minibus → D1, Van → C',
+      output: 'Drivers with matching licence',
+      detail: 'First filter: only drivers who are legally permitted to drive the required vehicle type appear in the candidate list. This is a hard constraint — no override possible.' },
+    { id: 'R2', name: 'Availability Check', color: '#f59e0b', icon: '📅',
+      input: 'Eligible drivers + mission date/time',
+      logic: 'Check KELIO Availability Snapshot',
+      output: 'Available eligible drivers',
+      detail: 'Uses KELIO-synced data from Availability Snapshot list. Driver must be available, shift must cover mission window. If data is stale (>30 min), warning shown but manual override allowed.' },
+    { id: 'R3', name: 'Pool Priority', color: '#6366f1', icon: '⭐',
+      input: 'Available drivers + mission priority',
+      logic: 'VIP mission → VIP pool first; Normal → Standard first',
+      output: 'Priority-filtered drivers',
+      detail: 'VIP missions are routed to VIP-qualified drivers first. If none available, falls back to Standard pool with coordinator notification. Urgent missions bypass pool restriction.' },
+    { id: 'R4', name: 'Rotation Sort', color: '#2E75B6', icon: '🔄',
+      input: 'Filtered drivers',
+      logic: 'Sort by Last Assignment Date ASC, then YTD missions ASC',
+      output: 'Ranked driver list',
+      detail: 'Ensures fair distribution: driver who hasn\'t been assigned longest goes first. In case of tie, driver with fewest missions year-to-date ranks higher.' },
+    { id: 'R5', name: 'Equity Flag', color: '#28a745', icon: '⚖️',
+      input: 'Top candidate',
+      logic: 'If EquityDelta > +20% → show warning',
+      output: 'Recommendation + optional warning',
+      detail: 'If the top-ranked candidate\'s workload already exceeds team average by more than 20%, the system displays an equity warning. Coordinator can proceed or select the next candidate.' },
+  ];
+
+  return (
+    <div>
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <h2 style={{ color: COLORS.primary, fontSize: 22, marginBottom: 8 }}>5 Assignment Business Rules</h2>
+        <p style={{ color: COLORS.muted, fontSize: 13 }}>Applied in sequence. The coordinator always makes the final decision.</p>
+      </div>
+
+      {/* Flow diagram */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, marginBottom: 28, flexWrap: 'wrap' }}>
+        <Badge text="ALL DRIVERS" color={COLORS.primary} />
+        {rules.map((rule, i) => (
+          <React.Fragment key={rule.id}>
+            <span style={{ color: COLORS.muted, fontSize: 18 }}>→</span>
+            <div
+              onClick={() => setActiveRule(activeRule === rule.id ? null : rule.id)}
+              style={{
+                padding: '6px 14px', borderRadius: 20, cursor: 'pointer', transition: 'all 0.2s',
+                background: activeRule === rule.id ? rule.color : rule.color + '15',
+                color: activeRule === rule.id ? '#fff' : rule.color,
+                fontWeight: 600, fontSize: 12,
+              }}
+            >
+              {rule.id}
+            </div>
+          </React.Fragment>
+        ))}
+        <span style={{ color: COLORS.muted, fontSize: 18 }}>→</span>
+        <Badge text="RECOMMENDED DRIVER" color={COLORS.success} />
+      </div>
+
+      {/* Rule cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
+        {rules.map(rule => (
+          <div key={rule.id}
+            onClick={() => setActiveRule(activeRule === rule.id ? null : rule.id)}
+            style={{
+              background: activeRule === rule.id ? rule.color + '08' : COLORS.card,
+              border: `2px solid ${activeRule === rule.id ? rule.color : '#e5e7eb'}`,
+              borderRadius: 10, padding: 18, cursor: 'pointer', transition: 'all 0.2s',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <span style={{ fontSize: 22 }}>{rule.icon}</span>
+              <div>
+                <div style={{ fontWeight: 800, color: rule.color, fontSize: 13 }}>{rule.id} — {rule.name}</div>
+              </div>
+            </div>
+            <div style={{ fontSize: 12, display: 'grid', gap: 4 }}>
+              <div><strong>Input:</strong> {rule.input}</div>
+              <div><strong>Logic:</strong> {rule.logic}</div>
+              <div><strong>Output:</strong> {rule.output}</div>
+            </div>
+            {activeRule === rule.id && (
+              <div style={{ marginTop: 10, padding: 10, background: rule.color + '08', borderRadius: 8, fontSize: 12, lineHeight: 1.6 }}>
+                {rule.detail}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ── WORKFLOWS TAB ──
+const WorkflowsTab = () => {
+  const [activeWf, setActiveWf] = useState(null);
+  const workflows = [
+    { id: 'A', name: 'Mission Intake', actor: 'Coordinator', trigger: 'Request received (email, phone, direct)', desc: 'All requests converge to one entry point. Mission created in SharePoint with status Draft. Mandatory fields enforced by Power Apps.' },
+    { id: 'B', name: 'Validation & Enrichment', actor: 'Coordinator', trigger: 'Draft mission needs completion', desc: 'Coordinator validates and completes the record: category, vehicle type, passenger count, time window, priority. Status moves to Ready for Assignment.' },
+    { id: 'C', name: 'Availability Assessment', actor: 'System + Coordinator', trigger: 'Mission ready for assignment', desc: 'System applies 5 business rules (R1–R5) using Availability Snapshot, Drivers, Vehicles, and Rotation Ledger. Produces ranked candidate list with warnings.' },
+    { id: 'D', name: 'Assignment Decision', actor: 'Coordinator', trigger: 'Candidates displayed', desc: 'Coordinator confirms recommended driver or overrides with justification. Assignment record created. Conflict check triggered automatically.' },
+    { id: 'E', name: 'CARMEP Queue', actor: 'System → Reservation', trigger: 'Assignment confirmed', desc: 'Structured queue item generated with all booking details. Reservation service executes in CARMEP and confirms. No informal changes allowed.' },
+    { id: 'F', name: 'Driver Notification', actor: 'System → Driver', trigger: 'Assignment executed', desc: 'Standard email + calendar entry sent to driver. Confirmation tracked. Reminder after 4h, escalation after 8h if unconfirmed.' },
+    { id: 'G', name: 'KELIO Update', actor: 'System → KELIO Operator', trigger: 'Mission affects work pattern', desc: 'If mission falls outside normal shift, KELIO operator receives notification. Time management records updated.' },
+    { id: 'H', name: 'Reassignment', actor: 'Coordinator', trigger: 'Change needed', desc: 'Old assignment archived, new assignment created. Rotation ledger adjusted. New driver gets clean notification (no mention of previous assignment).' },
+    { id: 'I', name: 'Conflict Detection', actor: 'System', trigger: 'Mission created or modified', desc: 'Checks driver overlap, vehicle overlap, and availability conflicts. 15-min buffer between consecutive missions. Flags conflicts for coordinator resolution.' },
+    { id: 'J', name: 'Recurring Generation', actor: 'System', trigger: 'Daily at 06:00', desc: 'Active templates generate Draft missions for upcoming period. Coordinator reviews and adjusts before proceeding with assignment workflow.' },
+  ];
+
+  return (
+    <div>
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <h2 style={{ color: COLORS.primary, fontSize: 22, marginBottom: 8 }}>10 Operational Workflows</h2>
+        <p style={{ color: COLORS.muted, fontSize: 13 }}>Click any workflow to see details</p>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
+        {workflows.map(wf => (
+          <div key={wf.id}
+            onClick={() => setActiveWf(activeWf === wf.id ? null : wf.id)}
+            style={{
+              background: activeWf === wf.id ? COLORS.accent + '08' : COLORS.card,
+              border: `2px solid ${activeWf === wf.id ? COLORS.accent : '#e5e7eb'}`,
+              borderRadius: 10, padding: 16, cursor: 'pointer', transition: 'all 0.2s',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+              <div>
+                <span style={{ fontWeight: 800, color: COLORS.accent, fontSize: 13 }}>Workflow {wf.id}</span>
+                <div style={{ fontWeight: 600, fontSize: 14, marginTop: 2 }}>{wf.name}</div>
+              </div>
+              <Badge text={wf.actor} color={COLORS.primary} />
+            </div>
+            <div style={{ fontSize: 11, color: COLORS.muted, marginTop: 6 }}>Trigger: {wf.trigger}</div>
+            {activeWf === wf.id && (
+              <div style={{ marginTop: 10, padding: 10, background: COLORS.blue50, borderRadius: 8, fontSize: 12, lineHeight: 1.6 }}>
+                {wf.desc}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ── PHASES TAB ──
+const PhasesTab = () => {
+  const [activePhase, setActivePhase] = useState(null);
+  const phases = [
+    { id: '0', name: 'Validation & Environment', color: '#6c757d', prereqs: ['IT confirms SharePoint site', 'Licensing validated', 'Security groups configured', 'Initial master data loaded'], outputs: 'SharePoint site with 13 lists, permission model, sample data' },
+    { id: '1A', name: 'Core Planning', color: '#2E75B6', prereqs: ['Phase 0 complete', 'Coordinators available for testing', 'Business rules validated'], outputs: 'Power Apps for missions + assignment, 5 rules, email notifications, conflict detection, audit trail' },
+    { id: '1B', name: 'Integration', color: '#f59e0b', prereqs: ['KELIO API access confirmed', 'CARMEP interface documented', 'Phase 1A operational'], outputs: 'KELIO sync (15 min), Availability Snapshot populated, CARMEP Queue operational, blackout handling' },
+    { id: '1C', name: 'Reporting & Optimisation', color: '#28a745', prereqs: ['Phase 1B producing reliable data', 'KPI definitions agreed', 'Power BI Pro available'], outputs: '4 Power BI pages, recurring mission templates, passenger management, weekly equity scores' },
+    { id: '1D', name: 'Stabilisation', color: '#6366f1', prereqs: ['All previous phases operational', 'Training completed', 'Parallel run period started'], outputs: 'Proven operational reliability, refined processes, management confidence, reduced Excel dependency' },
+    { id: '2', name: 'Dedicated Application', color: '#dc3545', prereqs: ['Phase 1 proven successful', 'Institution approves investment', 'Technology decisions made'], outputs: 'Dedicated backend, APIs, planning engine, mobile support, full integration. Technology TBD based on Phase 1 learnings.' },
+  ];
+
+  return (
+    <div>
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <h2 style={{ color: COLORS.primary, fontSize: 22, marginBottom: 8 }}>Phased Roadmap</h2>
+        <p style={{ color: COLORS.muted, fontSize: 13 }}>Each phase starts only when its prerequisites are met. Click to see details.</p>
+      </div>
+      {phases.map((phase, i) => (
+        <React.Fragment key={phase.id}>
+          <div
+            onClick={() => setActivePhase(activePhase === phase.id ? null : phase.id)}
+            style={{
+              display: 'flex', gap: 16, alignItems: 'start', cursor: 'pointer',
+              background: activePhase === phase.id ? phase.color + '08' : COLORS.card,
+              border: `2px solid ${activePhase === phase.id ? phase.color : '#e5e7eb'}`,
+              borderRadius: 10, padding: 18, transition: 'all 0.2s',
+            }}
+          >
+            <div style={{
+              width: 48, height: 48, borderRadius: '50%', background: phase.color,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff', fontWeight: 800, fontSize: 14, flexShrink: 0,
+            }}>{phase.id}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: 15, color: phase.color }}>{phase.name}</div>
+              <div style={{ fontSize: 12, color: COLORS.muted, marginTop: 4 }}>{phase.outputs}</div>
+              {activePhase === phase.id && (
+                <div style={{ marginTop: 12 }}>
+                  <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 6 }}>Prerequisites:</div>
+                  {phase.prereqs.map((p, j) => (
+                    <div key={j} style={{ fontSize: 12, padding: '3px 0', display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <span style={{ color: phase.color }}>✓</span> {p}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          {i < phases.length - 1 && <Arrow />}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+};
+
+// ── IT REQUIREMENTS TAB ──
+const ITTab = () => {
+  const items = [
+    { area: 'SharePoint Online', status: 'verify', questions: ['Can a dedicated site be provisioned?', 'What are the list size limits in the current tenant?', 'Can lookup columns between lists be configured?'], why: 'Central data store for all 13 lists. Without this, Phase 1 cannot start.' },
+    { area: 'Power Apps', status: 'verify', questions: ['Are Premium licences available or included in existing plans?', 'Can a Canvas app be deployed and shared with the defined user groups?', 'Are there restrictions on custom connectors?'], why: 'User interface for coordinators, drivers, and reservation service.' },
+    { area: 'Power Automate', status: 'verify', questions: ['Are premium connectors needed for KELIO integration?', 'What is the flow run limit per month?', 'Can scheduled flows run every 15 minutes?'], why: '10 automated flows: KELIO sync, notifications, conflict detection, queue processing.' },
+    { area: 'Power BI Pro', status: 'verify', questions: ['Are Pro licences available for report creators?', 'Can viewers access dashboards through existing licences?', 'Is a Premium/Fabric capacity already in place?'], why: '4 dashboard pages with direct SharePoint connection.' },
+    { area: 'KELIO API', status: 'critical', questions: ['Is API documentation available?', 'What authentication method is required?', 'What are the rate limits?', 'Confirm daily blackout window (11:45–13:15)'], why: 'Driver availability is the most critical input for assignment decisions.' },
+    { area: 'CARMEP Interface', status: 'assess', questions: ['Is a documented API specification available?', 'If not, is email-based structured handoff acceptable?', 'Who owns the CARMEP interface specification?'], why: 'Execution handoff from planning to dispatch must be reliable and traceable.' },
+    { area: 'Security & Identity', status: 'verify', questions: ['Can Microsoft Entra ID groups be configured for 6 defined roles?', 'Are there data governance policies affecting SharePoint list storage?', 'What are the data retention requirements?'], why: 'Role-based access ensures each user sees and edits only what they should.' },
+  ];
+
+  const statusColors = { verify: '#f59e0b', critical: '#dc3545', assess: '#6366f1' };
+  const statusLabels = { verify: 'TO VERIFY', critical: 'CRITICAL', assess: 'TO ASSESS' };
+
+  return (
+    <div>
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <h2 style={{ color: COLORS.primary, fontSize: 22, marginBottom: 8 }}>IT Requirements Checklist</h2>
+        <p style={{ color: COLORS.muted, fontSize: 13 }}>These items should be validated with IT before Phase 1 setup begins</p>
+      </div>
+      <div style={{ display: 'grid', gap: 12 }}>
+        {items.map((item, i) => (
+          <Card key={i} title={item.area} color={statusColors[item.status]}
+            icon={<Badge text={statusLabels[item.status]} color={statusColors[item.status]} />}
+          >
+            <div style={{ marginBottom: 8, fontStyle: 'italic', color: COLORS.muted }}>{item.why}</div>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>Questions for IT:</div>
+            {item.questions.map((q, j) => (
+              <div key={j} style={{ padding: '3px 0', fontSize: 12 }}>☐ {q}</div>
+            ))}
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ── MAIN APP ──
+const App = () => {
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const tabContent = {
+    overview: <OverviewTab />,
+    architecture: <ArchitectureTab />,
+    data: <DataModelTab />,
+    rules: <RulesTab />,
+    workflows: <WorkflowsTab />,
+    phases: <PhasesTab />,
+    it: <ITTab />,
+  };
+
+  return (
+    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '20px 16px' }}>
+      {/* Header */}
+      <div style={{ textAlign: 'center', marginBottom: 24, padding: '24px 0' }}>
+        <h1 style={{ color: COLORS.primary, fontSize: 26, fontWeight: 800, marginBottom: 4 }}>
+          Driver Planning & Mission Allocation
+        </h1>
+        <div style={{ color: COLORS.muted, fontSize: 14 }}>
+          Phase 1 — Microsoft 365 Solution Overview
+        </div>
+        <div style={{ color: COLORS.muted, fontSize: 12, marginTop: 4 }}>
+          DG INLO — Transport & Removals Unit
+        </div>
+      </div>
+
+      {/* Tab bar */}
+      <div style={{
+        display: 'flex', gap: 4, marginBottom: 24, overflowX: 'auto', padding: '4px',
+        background: '#e5e7eb', borderRadius: 12,
+      }}>
+        {TABS.map(tab => (
+          <button key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              padding: '10px 16px', border: 'none', borderRadius: 10, cursor: 'pointer',
+              background: activeTab === tab.id ? COLORS.card : 'transparent',
+              color: activeTab === tab.id ? COLORS.primary : COLORS.muted,
+              fontWeight: activeTab === tab.id ? 700 : 500, fontSize: 13,
+              boxShadow: activeTab === tab.id ? '0 2px 4px rgba(0,0,0,0.08)' : 'none',
+              transition: 'all 0.2s', whiteSpace: 'nowrap', flexShrink: 0,
+            }}
+          >
+            <span style={{ marginRight: 6 }}>{tab.icon}</span>{tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div style={{ minHeight: 500 }}>
+        {tabContent[activeTab]}
+      </div>
+
+      {/* Footer */}
+      <div style={{ textAlign: 'center', padding: '24px 0', marginTop: 32, borderTop: '1px solid #e5e7eb', color: COLORS.muted, fontSize: 11 }}>
+        DG INLO — Driver Planning Phase 1 — For internal review — April 2026
+      </div>
+    </div>
+  );
+};
+
+ReactDOM.render(<App />, document.getElementById('root'));
+</script>
+</body>
+</html>
